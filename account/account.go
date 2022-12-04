@@ -9,14 +9,14 @@ import (
 )
 
 type Account struct {
-	Nonce   uint64
-	Balance uint64
+	Nonce   uint64 `json:"nonce"`
+	Balance uint64 `json:"balance"`
 }
 
 type AccountStateMutation struct {
-	PublicKey string
-	Nonce     uint64
-	Balance   uint64
+	Address string
+	Nonce   uint64
+	Balance uint64
 }
 
 type AccountManager struct {
@@ -59,4 +59,23 @@ func (accountManager *AccountManager) GetAccount(address string) (*Account, erro
 	var account Account
 	json.Unmarshal(accountRaw, &account)
 	return &account, nil
+}
+
+func (accountManger *AccountManager) ApplyStateMutation(accountStateMutation *AccountStateMutation) error {
+	accountEncoded, _ := json.Marshal(Account{
+		Nonce:   accountStateMutation.Nonce,
+		Balance: accountStateMutation.Balance,
+	})
+
+	err := accountManger.database.Put(
+		[]byte(accountStateMutation.Address),
+		accountEncoded,
+		nil,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

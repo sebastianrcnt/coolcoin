@@ -70,9 +70,6 @@ var ErrInvalidPublicKey = errors.New("invalid public key")
 var ErrInvalidSignature = errors.New("invalid signature")
 var ErrInvalidNonce = errors.New("invalid nonce")
 
-func (transaction *Transaction) ValidateSignature() {
-}
-
 func CheckTransactionValidity(transaction *Transaction, accountManager *account.AccountManager) (bool, error) {
 	senderAccount, err := accountManager.GetAccount(transaction.Body.SenderAddress)
 
@@ -121,12 +118,6 @@ func CheckTransactionValidity(transaction *Transaction, accountManager *account.
 	return true, nil
 }
 
-func (transaction *Transaction) ToAccountStateMutation(accountManager *account.AccountManager) (*account.AccountStateMutation, error) {
-
-	accountStateMutation := account.AccountStateMutation{}
-	return &accountStateMutation, nil
-}
-
 func (block *Block) Hash() string {
 	encoded, err := json.Marshal(block)
 
@@ -138,56 +129,56 @@ func (block *Block) Hash() string {
 	return hex.EncodeToString(hash[:])
 }
 
-func (previousBlock *Block) ProduceNextBlock(
-	transactions []Transaction,
-	producerPrivateKey ecdsa.PrivateKey,
-	accountManager *account.AccountManager,
-) (*Block, []*account.AccountStateMutation, error) {
-	var accountStateMutations []*account.AccountStateMutation = make([]*account.AccountStateMutation, len(transactions))
+// func (previousBlock *Block) ProduceNextBlock(
+// 	transactions []Transaction,
+// 	producerPrivateKey ecdsa.PrivateKey,
+// 	accountManager *account.AccountManager,
+// ) (*Block, []*account.AccountStateMutation, error) {
+// 	var accountStateMutations []*account.AccountStateMutation = make([]*account.AccountStateMutation, len(transactions))
 
-	for idx, transaction := range transactions {
-		isTransactionValid, err := CheckTransactionValidity(&transaction, accountManager)
+// 	for idx, transaction := range transactions {
+// 		isTransactionValid, err := CheckTransactionValidity(&transaction, accountManager)
 
-		if !isTransactionValid {
-			return nil, nil, err
-		}
+// 		if !isTransactionValid {
+// 			return nil, nil, err
+// 		}
 
-		accountStateMutation, err := transaction.ToAccountStateMutation(
-			accountManager,
-		)
+// 		accountStateMutation, err := transaction.ToAccountStateMutation(
+// 			accountManager,
+// 		)
 
-		if err != nil {
-			return nil, nil, err
-		}
+// 		if err != nil {
+// 			return nil, nil, err
+// 		}
 
-		accountStateMutations[idx] = accountStateMutation
-	}
+// 		accountStateMutations[idx] = accountStateMutation
+// 	}
 
-	producerPublicKey, err := crypto.HexifyPublicKey(&producerPrivateKey.PublicKey)
+// 	producerPublicKey, err := crypto.HexifyPublicKey(&producerPrivateKey.PublicKey)
 
-	if err != nil {
-		panic(err)
-	}
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	nextBlockData := BlockData{
-		Height:            previousBlock.Data.Height + 1, // increment block height by 1
-		Timestamp:         uint64(time.Now().Nanosecond()),
-		ProducerAddress:   string(producerPublicKey),
-		PreviousBlockHash: previousBlock.Hash(),
-		Transactions:      transactions,
-	}
+// 	nextBlockData := BlockData{
+// 		Height:            previousBlock.Data.Height + 1, // increment block height by 1
+// 		Timestamp:         uint64(time.Now().Nanosecond()),
+// 		ProducerAddress:   string(producerPublicKey),
+// 		PreviousBlockHash: previousBlock.Hash(),
+// 		Transactions:      transactions,
+// 	}
 
-	encodedNextBlockData, _ := json.Marshal(nextBlockData)
-	signature, err := crypto.CreateDigitalSignature(encodedNextBlockData, &producerPrivateKey)
+// 	encodedNextBlockData, _ := json.Marshal(nextBlockData)
+// 	signature, err := crypto.CreateDigitalSignature(encodedNextBlockData, &producerPrivateKey)
 
-	if err != nil {
-		return nil, accountStateMutations, err
-	}
+// 	if err != nil {
+// 		return nil, accountStateMutations, err
+// 	}
 
-	nextBlock := Block{
-		Data:      nextBlockData,
-		Signature: string(signature),
-	}
+// 	nextBlock := Block{
+// 		Data:      nextBlockData,
+// 		Signature: string(signature),
+// 	}
 
-	return &nextBlock, accountStateMutations, nil
-}
+// 	return &nextBlock, accountStateMutations, nil
+// }

@@ -1,13 +1,13 @@
 package block
 
-type TransactionData struct {
-	SenderAddress   string
-	ReceiverAddress string
-	Value           uint64
-	Nonce           uint64
+type TransactionBody struct {
+	SenderAddress   string `json:"sender"`
+	ReceiverAddress string `json:"receiver"`
+	Value           uint64 `json:"value"`
+	Nonce           uint64 `json:"nonce"`
 }
 
 type Transaction struct {
 	SenderSignature string
-	Body            TransactionData
+	Body            TransactionBody
 }
