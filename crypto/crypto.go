@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/hex"
 )
@@ -81,9 +80,4 @@ func DecodePublicKeyHex(publKeyHex string) (*ecdsa.PublicKey, error) {
 	publKey := publKeyRaw.(*ecdsa.PublicKey)
 
 	return publKey, nil
-}
-
-func EncodeAddress(hexEncodedPublicKey string) (string, error) {
-	hash := sha256.Sum256([]byte(hexEncodedPublicKey))
-	return hex.EncodeToString(hash[:]), nil // [:]는 array -> slice 로 바꿔준다.
 }
