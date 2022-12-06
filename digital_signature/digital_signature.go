@@ -1,9 +1,10 @@
-package crypto
+package digital_signature
 
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/hex"
 )
@@ -80,4 +81,22 @@ func DecodePublicKeyHex(publKeyHex string) (*ecdsa.PublicKey, error) {
 	publKey := publKeyRaw.(*ecdsa.PublicKey)
 
 	return publKey, nil
+}
+
+func CreateDigitalSignature(message []byte, privKey *ecdsa.PrivateKey) ([]byte, error) {
+	hash := sha256.Sum256(message)
+	signature, err := ecdsa.SignASN1(rand.Reader, privKey, hash[:])
+
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return signature, nil
+}
+
+func VerifyDigitalSignature(message []byte, publKey *ecdsa.PublicKey, signature []byte) bool {
+	hash := sha256.Sum256((message))
+	isValid := ecdsa.VerifyASN1(publKey, hash[:], signature)
+
+	return isValid
 }

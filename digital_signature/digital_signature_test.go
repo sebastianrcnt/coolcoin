@@ -1,12 +1,12 @@
-package crypto_test
+package digital_signature_test
 
 import (
-	crypto "coolcoin/crypto"
+	"coolcoin/digital_signature"
 	"testing"
 )
 
 func TestGenerateKey(t *testing.T) {
-	privateKey, publicKey, err := crypto.GenerateKey()
+	privateKey, publicKey, err := digital_signature.GenerateKey()
 
 	if !privateKey.PublicKey.Equal(publicKey) {
 		t.Error("Private Key and Public Key don't match", err)
@@ -18,8 +18,8 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestEncodeAndDecodePrivateKey(t *testing.T) {
-	privateKey, _, _ := crypto.GenerateKey()
-	encoded, err := crypto.HexifyPrivateKey(privateKey)
+	privateKey, _, _ := digital_signature.GenerateKey()
+	encoded, err := digital_signature.HexifyPrivateKey(privateKey)
 
 	if err != nil {
 		t.Error(err)
@@ -29,7 +29,7 @@ func TestEncodeAndDecodePrivateKey(t *testing.T) {
 		t.Error("encoded string is empty", err)
 	}
 
-	decoded, err := crypto.DecodePrivateKeyHex(encoded)
+	decoded, err := digital_signature.DecodePrivateKeyHex(encoded)
 
 	if err != nil {
 		t.Error(err)
@@ -41,8 +41,8 @@ func TestEncodeAndDecodePrivateKey(t *testing.T) {
 }
 
 func TestEncodeAndDecoePublicKey(t *testing.T) {
-	_, publicKey, _ := crypto.GenerateKey()
-	encoded, err := crypto.HexifyPublicKey(publicKey)
+	_, publicKey, _ := digital_signature.GenerateKey()
+	encoded, err := digital_signature.HexifyPublicKey(publicKey)
 
 	if err != nil {
 		t.Error(err)
@@ -52,7 +52,7 @@ func TestEncodeAndDecoePublicKey(t *testing.T) {
 		t.Error("encoded string is empty")
 	}
 
-	decoded, err := crypto.DecodePublicKeyHex(encoded)
+	decoded, err := digital_signature.DecodePublicKeyHex(encoded)
 
 	if err != nil {
 		t.Error(err)
@@ -64,16 +64,16 @@ func TestEncodeAndDecoePublicKey(t *testing.T) {
 }
 
 func TestSign(t *testing.T) {
-	privKey, publKey, _ := crypto.GenerateKey()
+	privKey, publKey, _ := digital_signature.GenerateKey()
 	message := []byte("Message Data")
 
-	signature, err := crypto.CreateDigitalSignature(message, privKey)
+	signature, err := digital_signature.CreateDigitalSignature(message, privKey)
 
 	if err != nil {
 		t.Error("sign failed", err)
 	}
 
-	isValid := crypto.VerifyDigitalSignature(message, publKey, signature)
+	isValid := digital_signature.VerifyDigitalSignature(message, publKey, signature)
 
 	if !isValid {
 		t.Error("signature is not valid", isValid)
