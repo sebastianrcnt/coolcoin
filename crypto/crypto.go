@@ -64,6 +64,7 @@ func HexifyPublicKey(publKey *ecdsa.PublicKey) (string, error) {
 
 func DecodePublicKeyHex(publKeyHex string) (*ecdsa.PublicKey, error) {
 	decodedData, err := hex.DecodeString(publKeyHex)
+	println("dcd", publKeyHex, decodedData)
 
 	if err != nil {
 		return nil, err

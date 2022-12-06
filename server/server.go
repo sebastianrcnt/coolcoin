@@ -68,27 +68,29 @@ func CreateServer() *gin.Engine {
 	})
 
 	r.POST("/api/v1/transactions/", func(ctx *gin.Context) {
-		var req TransactionRequestType
-		err := ctx.BindJSON(req)
+		var req *TransactionRequestType
+		err := ctx.BindJSON(&req)
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, err)
+			log.Println(err.Error())
+			ctx.JSON(http.StatusBadRequest, err.Error())
 		}
 
 		// Create Transaction
 		tx := block.Transaction{
 			SenderSignature: req.Signature,
 			Body: block.TransactionBody{
-				SenderAddress: req.SenderAddress,
-				Value:         req.Value,
-				Nonce:         req.Nonce,
+				SenderAddress:   req.SenderAddress,
+				ReceiverAddress: req.ReceiverAddress,
+				Value:           req.Value,
+				Nonce:           req.Nonce,
 			},
 		}
 
 		isValid, err := block.CheckTransactionValidity(&tx, accountManager)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, err)
+			ctx.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 
@@ -101,8 +103,14 @@ func CreateServer() *gin.Engine {
 		if err != nil {
 			panic(err)
 		}
+
 		receiver, err := accountManager.GetAccount(req.ReceiverAddress)
-		if err != nil {
+		if receiver != nil {
+			receiver = &account.Account{
+				Balance: 0,
+				Nonce:   0,
+			}
+		} else if err != nil {
 			panic(err)
 		}
 
@@ -110,15 +118,15 @@ func CreateServer() *gin.Engine {
 		receiverBalance := receiver.Balance
 
 		senderStateMutation := account.AccountStateMutation{
-			Address: req.SenderAddress,
-			Nonce:   req.Nonce,
-			Balance: senderBalance - req.Value,
+			PublicKey: req.SenderAddress,
+			Nonce:     req.Nonce,
+			Balance:   senderBalance - req.Value,
 		}
 
 		receiverStateMutation := account.AccountStateMutation{
-			Address: req.ReceiverAddress,
-			Nonce:   req.Nonce,
-			Balance: receiverBalance + req.Value,
+			PublicKey: req.ReceiverAddress,
+			Nonce:     req.Nonce,
+			Balance:   receiverBalance + req.Value,
 		}
 
 		err = accountManager.ApplyStateMutation(&senderStateMutation)
@@ -168,9 +176,9 @@ func CreateServer() *gin.Engine {
 
 		err = accountManager.ApplyStateMutation(
 			&account.AccountStateMutation{
-				Address: body.Address,
-				Nonce:   found.Nonce,
-				Balance: found.Balance + 100,
+				PublicKey: body.Address,
+				Nonce:     found.Nonce,
+				Balance:   found.Balance + 100,
 			},
 		)
 

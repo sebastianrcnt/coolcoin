@@ -81,6 +81,8 @@ func CheckTransactionValidity(transaction *Transaction, accountManager *account.
 		return false, err
 	}
 
+	fmt.Println(transaction.Body)
+
 	senderPublicKey, senderPublicKeyErr := crypto.DecodePublicKeyHex(transaction.Body.SenderAddress)
 	_, receiverPublicKeyErr := crypto.DecodePublicKeyHex(transaction.Body.ReceiverAddress)
 

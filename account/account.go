@@ -14,9 +14,9 @@ type Account struct {
 }
 
 type AccountStateMutation struct {
-	Address string
-	Nonce   uint64
-	Balance uint64
+	PublicKey string
+	Nonce     uint64
+	Balance   uint64
 }
 
 type AccountManager struct {
@@ -31,17 +31,17 @@ func NewAccountManager(database *leveldb.DB) *AccountManager {
 	}
 }
 
-func (accountManager *AccountManager) CreateAccount() (addressString string, privateKeyString string, err error) {
+func (accountManager *AccountManager) CreateAccount() (publicKey string, privateKeyString string, err error) {
 	priv, publ, _ := crypto.GenerateKey()
 	privateKeyString, _ = crypto.HexifyPrivateKey(priv)
 	encodedPubl, _ := crypto.HexifyPublicKey(publ)
-	addressString, err = crypto.EncodeAddress(encodedPubl)
+	publicKey, err = crypto.EncodeAddress(encodedPubl)
 
 	accountEncoded, _ := json.Marshal(Account{
 		Nonce:   0,
 		Balance: 0,
 	})
-	accountManager.database.Put([]byte(addressString), accountEncoded, nil)
+	accountManager.database.Put([]byte(publicKey), accountEncoded, nil)
 	return
 }
 
@@ -68,7 +68,7 @@ func (accountManger *AccountManager) ApplyStateMutation(accountStateMutation *Ac
 	})
 
 	err := accountManger.database.Put(
-		[]byte(accountStateMutation.Address),
+		[]byte(accountStateMutation.PublicKey),
 		accountEncoded,
 		nil,
 	)
